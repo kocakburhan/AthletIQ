@@ -1,0 +1,96 @@
+athlete olacak
+trainer olacak
+Gear olacak ve bu gearın sistem id'si olacak, ek olarak esp'nin kendi id değeri de olacak.
+TrainingData olacak bu data gps'ten gelen json verisini ya da verilerini alacak. 
+TrainingSession olacak ve burada birden fazla TrainingData'dan hesaplmalar yapılacak
+hesaplanan veriler de TrainingSession objesi olacak.
+
+Athlete:
+* many to many --> trainer
+* one to one --> gear
+* one to many --> training session
+
+Trainer:
+* many to many --> athlete
+
+Gear:
+* one to one --> athlete
+* one to many --> training session
+
+TrainingData:
+* many to one --> training session
+
+TrainingSession:
+* one to many --> training data
+* many to one --> athlete
+
+
+gps'ten gelen verilerin formatı:
+{
+  "espId": "ESP32-001187468917246",
+  "date": "03/02/2025",
+  "gpsData": [
+    {
+      "speed": 35.6
+      "time": 15:16:17
+    },
+    {
+      "speed": 36.2,
+      "time": 15:16:18
+    },
+    {
+      "speed": 34.8,
+      "time": 15:16:19
+    }
+  ]
+}
+gelen verilerde saniye atlanması yaşanabiliyor, örnek olarak 38. saniyede veri geldikten sonra bir sonraki veri 39 yerine 40. saniyede geliyor. algoritma böyle durumlar için 39. saniyeye 38 ve 40. saniyedeki hız verilerinin ortlamasını eklemeli.
+
+json'dan gelen hız ve time bilgisi HashMap benzeri bir veri yapısında tutulmalı bu sayede her saniyedeki hız verisi birbirleri ile ilişkili olacak şekilde saklanmış olacak ve eğer atlanan saniye varsa o saniyeye sistem tarafından önceki ve sonraki saniylerin hız değerinin ortalaması olacak şekilde hız atanacak. Bu işlemleri 
+
+
+-- TrainingSession ile Gear arasında one to many ilişki olacak.
+-- TrainingSession ile Athlete arasında one to many olacak.
+-- Trainer ve Athlete arasında many to many ilişki olacak.
+-- athlete ve gear arasında one to many ilişki olacak. bir athlete yalnızca bir gear'a sahip olabilir. cihaz değiştirmek isteyen athlete var olan cihaz ile ilişkisinin kesilmesi gerekir ancak session verileri hem cihaza hem de sporcuya ait olduğu için cihaz değiştiren sporcunun eski session verileri saklanmaya devam edecek.
+
+
+
+Club olacak. Club'ın sporcular ve antrenörler ile one to many ilişkisi olacak.
+Club bünyesindeki oyuncuların tamamının verilerini görüntüleyebilecek.
+Ek olarak antrenör ekleme çıkarmaya da sahip olacak. Club tarafından eklenen antrenör ve oyuncular arasındaki many to many ilişki otomatik olarak oluşacak ve antrenör o kulüpteki oyuncuların tamamının verisini görüntüleyebilecek. Genel olarak tüm sistemin yönetimi Club classı tarafından gerçekleştirilecek. Club'ın giriş yapabilmesi için username ve password bilgileri sistem tarafından kulüplere verilecek, antrenör ekleme çıkarma işlemleri kulüp tarafından yürütülecek. Kulübün oyuncu eklerken kullanacağı sistem:
+Her kulübe özel olarak bir kod verilecek, oyuncu kulüp seçecek ve seçeceği kulübe ait olan kodu girecek, böylece kulüp tarafından ve o kulübün antrenörleri tarafından oyuncu verisi görüntülenebilir olacak. Oyuncu istediği zaman kulüpten ayrılabilecek ve verileri görüntülenemez olacak.
+
+Ek olarak Club ile gear arasında da one to many ilişki olacak, bir kulübün birden çok gearı olabilecek. Bu sayede gerektiğinde Gear'a kulüp üzerinden sorgu atılabilecek.
+
+
+ TrainingSession içerisinde hesaplanacak olan metrikler:
+    private double totalDistance; // koşulan toplam mesafe
+    private double maxSpeed; // maksimum hız
+    private double maxDeceleration; // maksimum yavaşlama ivmesi
+    private double minDeceleration; // minimum yavaşlama ivmesi
+    private double avgDeceleration; // ortalama yavaşlama ivmesi
+    private double maxAcceleration; // maksimum hızlanma ivmesi
+    private double minAcceleration; // minimum hızlanma ivmesi
+    private double avgAcceleration; // ortalama hızlanma ivmesi
+    private double avgSpeed; // km/h
+    private int sprintCount; // sprint sayısı (koşucunun maksimum hızlarda yaptığı koşuların adeti.)
+    private double sprintDistance; // atılan sprintlerin toplam mesafesi
+    private double highMetabolicLoadDistance; // 20km/h üzerinde hızda kat edilen mesafenin toplamı
+
+
+
+
+
+
+
+
+AKIŞ:
+
+
+POST isteği ile gönderilecek olan GPS verisi karşılınırken DTO kullanılacak.
+Bu DTO servis katmanında TrainingData objesine ya da objelerine dönüşecek.
+Servis katmanında TrainingSession objesi oluşacak.
+TrainingSession objesinde yer alan TrainingData listesine oluşturulan TrainingData'lar gönderilecek.
+TrainingSession içerisindeki TrainingData ya da TrainingData'lar kullanılarak TrainingSession içerisindeki hesaplanacak olan metrikler de servis katmanında hesaplanacak. 
+Hesaplanan bu veriler ile birlikte TrainingSession oluşmuş olacak ve bu obje db'e kaydedilecek.
