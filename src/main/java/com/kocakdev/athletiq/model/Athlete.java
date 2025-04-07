@@ -6,7 +6,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
@@ -52,6 +51,6 @@ public class Athlete {
     @JoinColumn(name = "gear_id")
     private Gear gear;
 
-    @OneToMany(mappedBy = "athlete", orphanRemoval = true, cascade = CascadeType.ALL)
+    @OneToMany(orphanRemoval = true, cascade = CascadeType.ALL)
     private List<TrainingSession> trainingSessions = new ArrayList<>();
 }

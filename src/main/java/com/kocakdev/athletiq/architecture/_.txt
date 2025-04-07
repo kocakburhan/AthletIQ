@@ -6,19 +6,18 @@ TrainingSession olacak ve burada birden fazla TrainingData'dan hesaplmalar yapı
 hesaplanan veriler de TrainingSession objesi olacak.
 
 Athlete:
-* many to many --> trainer
-* one to one --> gear
-* one to many --> training session
+* many to many --> trainer +
+* one to one --> gear +
+* one to many --> training session +
 
 Trainer:
-* many to many --> athlete
+* many to many --> athlete +
 
 Gear:
-* one to one --> athlete
-* one to many --> training session
+* one to one --> athlete +
 
 TrainingData:
-* many to one --> training session
+* gps'ten gelen json verisi burada.
 
 TrainingSession:
 * one to many --> training data
